@@ -14,6 +14,7 @@ if(isset($_GET["message"])){
 $keyword = "";
 $search_sql = "select * from news order by is_top desc, news_id desc";
 if(isset($_GET["keyword"])){
+    // keyword already escaped above
     $keyword = trim(escape_string($_GET["keyword"]));
     $search_sql = "select * from news where title like '%$keyword%' or content like '%$keyword%' order by is_top desc, news_id desc";
 }
@@ -40,6 +41,7 @@ $start = ($page_current - 1) * $page_size;
 if(!isset($_GET["keyword"])){
     $search_sql = "select * from news order by is_top desc, news_id desc limit $start,$page_size";
 }else{
+    // keyword already escaped above
     $keyword = trim(escape_string($_GET["keyword"]));
     $search_sql = "select * from news where title like '%$keyword%' or content like '%$keyword%' order by is_top desc, news_id desc limit $start,$page_size";
 }

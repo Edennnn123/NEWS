@@ -14,7 +14,7 @@ if(empty($_POST)){
      $title = escape_string($_POST["title"]);
      $content = escape_string($_POST["content"]);
 
-     // Summary: auto-extract from content if empty
+     // summary: auto-extract from content if empty
      if(!empty(trim($_POST["summary"]))){
          $summary = escape_string($_POST["summary"]);
      }else{
@@ -26,7 +26,7 @@ if(empty($_POST)){
      $clicked = 0;
      $is_top = isset($_POST["is_top"]) ? 1 : 0;
 
-     // Thumbnail upload
+     // thumbnail upload
      $thumbnail = "";
      if(isset($_FILES["thumbnail"]) && $_FILES["thumbnail"]["error"] == 0){
          $ext = strtolower(pathinfo($_FILES["thumbnail"]["name"], PATHINFO_EXTENSION));
@@ -38,7 +38,7 @@ if(empty($_POST)){
          }
      }
 
-     // Attachment
+     // attachment
      $file_name = "";
      $message = "新闻发布成功！";
      if(isset($_FILES["news_file"]) && $_FILES["news_file"]["error"] == 0){

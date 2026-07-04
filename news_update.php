@@ -14,7 +14,7 @@ $category_id = intval($_POST["category_id"]);
 $title = escape_string($_POST["title"]);
 $content = escape_string($_POST["content"]);
 
-// Summary
+// summary
 if(!empty(trim($_POST["summary"]))){
     $summary = escape_string($_POST["summary"]);
 }else{
@@ -24,7 +24,7 @@ if(!empty(trim($_POST["summary"]))){
 
 $is_top = isset($_POST["is_top"]) ? 1 : 0;
 
-// Thumbnail
+// thumbnail
 $thumbnail_sql = "";
 if(isset($_FILES["thumbnail"]) && $_FILES["thumbnail"]["error"] == 0){
     $ext = strtolower(pathinfo($_FILES["thumbnail"]["name"], PATHINFO_EXTENSION));
@@ -37,7 +37,7 @@ if(isset($_FILES["thumbnail"]) && $_FILES["thumbnail"]["error"] == 0){
     }
 }
 
-// Attachment
+// attachment
 $file_sql = "";
 if(isset($_FILES["news_file"]) && $_FILES["news_file"]["error"] == 0){
     $file_name = escape_string($_FILES["news_file"]["name"]);

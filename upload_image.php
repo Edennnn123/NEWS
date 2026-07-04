@@ -34,7 +34,7 @@ $destination = $upload_dir . $new_name;
 
 if(move_uploaded_file($file['tmp_name'], $destination)){
     $url = $destination;
-    echo '<script type="text/javascript">window.parent.CKEDITOR.tools.callFunction(' . intval($_GET['CKEditorFuncNum']) . ', "' . $url . '");</script>';
+    echo '<script type="text/javascript">window.parent.CKEDITOR.tools.callFunction(' . intval($_GET['CKEditorFuncNum']) . ', "' . htmlspecialchars($url) . '");</script>';
 }else{
     http_response_code(500);
     exit('File save failed');

@@ -1,0 +1,18 @@
+# Claude Code
+.claude/
+
+# Uploaded files (user-generated content)
+uploads/*
+!uploads/.gitkeep
+userfiles/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+uploads/*

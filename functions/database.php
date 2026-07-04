@@ -9,7 +9,7 @@ function get_connection(){
      // connect first, then create/select database
      $database_connection = @mysqli_connect($hostname, $username, $password);
      if(!$database_connection){
-          exit("ç³»ç»Ÿé”™è¯¯ï¼Œè¯·ç¨åå†è¯•");
+          exit("ÏµÍ³´íÎó£¬ÇëÉÔºóÔÙÊÔ");
      }
      // charset & create/select database
      mysqli_query($database_connection, "set names 'gbk'");

@@ -36,6 +36,7 @@ $sql = "insert into users values(null,'$name','$password_md5')";
 if(mysqli_query($GLOBALS['database_connection'], $sql)){
     // 获取新用户ID并自动登录
     $user_id = mysqli_insert_id($GLOBALS['database_connection']);
+    session_regenerate_id(true);
     $_SESSION['user_id'] = $user_id;
     $_SESSION['name'] = $name;
     close_connection();

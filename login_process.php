@@ -26,6 +26,7 @@ if(mysqli_num_rows($result_set)>0){
      		setcookie("password",$first_password,$expire); 
      }  
      $admin = mysqli_fetch_array($result_set); 
+     session_regenerate_id(true); 
      $_SESSION['user_id'] = $admin['user_id']; 
      $_SESSION['name'] = $admin['name']; 
      header("Location:index.php?login_message=password_right");

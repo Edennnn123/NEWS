@@ -6,14 +6,17 @@ function get_connection(){
      $username = "root"; 			//数据库服务器用户名
      $password = ""; 				//数据库服务器密码
      global $database_connection;
-     $database_connection = @mysqli_connect($hostname, $username, $password, $database) or die("数据库连接失败");
+     $database_connection = @mysqli_connect($hostname, $username, $password, $database);
+     if(!$database_connection){
+     		exit("系统错误，请稍后再试");
+     }
      mysqli_query($database_connection, "set names 'gbk'");//设置字符集
 }
 function close_connection(){
      global $database_connection;
      if($database_connection){
-     		mysqli_close($database_connection) or die("数据库关闭失败");
-		}
+     		@mysqli_close($database_connection);
+	}
 }
 function escape_string($input){
 	global $database_connection;

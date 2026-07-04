@@ -1,0 +1,470 @@
+# 新闻发布系统 — 项目文档
+
+## 目录
+
+1. [项目简介](#1-项目简介)
+2. [代码审查报告](#2-代码审查报告)
+3. [安全修复](#3-安全修复)
+4. [代码质量改进](#4-代码质量改进)
+5. [前端重构](#5-前端重构)
+6. [新增功能](#6-新增功能)
+7. [开发中的问题与解决](#7-开发中的问题与解决)
+8. [功能清单](#8-功能清单)
+9. [使用指南](#9-使用指南)
+10. [安装部署](#10-安装部署)
+
+---
+
+## 1. 项目简介
+
+这是一个 PHP 新闻发布系统（CMS 雏形），基于 PHP + MySQL 构建，采用 GBK 编码，使用 FCKeditor 作为富文本编辑器。
+
+**技术栈：**
+- PHP 5+ (使用 `mysqli_*` 扩展)
+- MySQL (InnoDB 引擎，外键约束)
+- FCKeditor 2.x (富文本编辑器)
+- CSS3 (极简风格，响应式布局)
+- 字符编码：GBK
+
+---
+
+## 2. 代码审查报告
+
+### 2.1 初始审查（2026-07-04）
+
+初次代码分析覆盖所有 26 个 PHP/JS/SQL 文件（不含第三方 FCKeditor 库），按严重程度分级：
+
+### P0 — 高危安全漏洞
+
+| # | 问题 | 涉及文件 | 风险等级 |
+|---|------|---------|---------|
+| 1 | **本地文件包含 (LFI)** | `index.php` | 服务器完全沦陷 |
+| 2 | **SQL 注入** | 几乎所有数据库操作文件（18+ 文件） | 数据泄露/篡改 |
+| 3 | **文件上传无校验** | `news_save.php`, `file_system.php` | 远程代码执行 |
+
+**问题详情：**
+
+- **LFI**：`index.php` 直接将 `$_GET["url"]` 传入 `include_once()`，攻击者可访问任意文件路径
+- **SQL 注入**：全部使用 `mysql_*` 函数，用户输入直接拼接 SQL，无任何过滤
+- **文件上传**：`upload()` 函数只做 `move_uploaded_file`，无扩展名/MIME 白名单校验
+
+### P1 — 中危安全/架构问题
+
+| # | 问题 | 涉及文件 |
+|---|------|---------|
+| 4 | 反射型 XSS（输出未转义） | `news_list.php`、`news_detail.php`、`news_list_1.php` 等 |
+| 5 | Cookie 直接存储密码 MD5 | `login_process.php` |
+| 6 | 密码使用 MD5（无 salt） | `init.php`、`register_process.php`、`login_process.php` |
+| 7 | 无 CSRF 令牌 | 所有表单 |
+| 8 | 验证码仅 4 位纯数字且明文显示 | `login.php` |
+
+### P2 — 代码质量
+
+| # | 问题 | 涉及文件 |
+|---|------|---------|
+| 9 | 登录后未重新生成 session ID | `login_process.php` |
+| 10 | 数据库错误信息直接暴露给用户 | `functions/database.php` |
+| 11 | 冗余代码文件 | `news_list_1.php`、`news_list_2.php`、`review_list_1.php` |
+| 12 | PHP + HTML 完全混合，无 MVC 分离 | 所有文件 |
+| 13 | 字符编码不一致 | 多个文件（混用 UTF-8/GBK/ASCII） |
+
+---
+
+## 3. 安全修复
+
+### 3.1 P0-1：本地文件包含（LFI）
+
+**提交：** `8196725`
+
+**做法：** 将 `$_GET["url"]` 直接 `include` 改为**白名单路由**，只允许预先定义的 10 个页面被包含。
+
+**修改文件：** `index.php`
+
+```php
+// 修复前
+if(isset($_GET["url"])){
+    $url = $_GET["url"];
+}
+include_once($url);
+
+// 修复后
+$allowed_pages = array(
+    "news_list.php", "news_detail.php", "news_add.php",
+    "news_edit.php", "news_delete.php", "review_list.php",
+    "review_news_list.php",
+);
+if(isset($_GET["url"]) && in_array($_GET["url"], $allowed_pages)){
+    $url = $_GET["url"];
+}
+include_once($url);
+```
+
+### 3.2 P0-2：SQL 注入
+
+**提交：** `8196725`
+
+**做法：**
+1. 全部 `mysql_*` 函数替换为 `mysqli_*`
+2. 新增 `escape_string()` 函数统一转义字符串输入
+3. 数值类型参数统一用 `intval()` 处理
+
+**修改文件：** 18 个文件（`functions/database.php`、`login_process.php`、`register_process.php`、`news_*.php`、`review_*.php` 等）
+
+```php
+// functions/database.php - 新增转义函数
+function escape_string($input){
+    global $database_connection;
+    return mysqli_real_escape_string($database_connection, $input);
+}
+
+// 使用示例
+$name = escape_string($_POST["name"]);
+$news_id = intval($_GET["news_id"]);
+```
+
+### 3.3 P0-3：文件上传
+
+**提交：** `8196725`
+
+**做法：** 在 `upload()` 函数中添加扩展名白名单校验
+
+**修改文件：** `functions/file_system.php`
+
+```php
+$allowed_exts = array("jpg","jpeg","png","gif","bmp","pdf","doc","docx",
+                      "xls","xlsx","ppt","pptx","txt","rtf","zip","rar");
+if(!in_array($ext, $allowed_exts)){
+    return "文件类型不允许上传，仅支持图片、文档和压缩包格式";
+}
+```
+
+### 3.4 部分 P1 修复
+
+部分 P1 问题在前端重构时顺手修复：
+
+- `news_list.php` 中的 XSS 漏洞（`$_GET["message"]` 输出加 `htmlspecialchars()`）
+- `index.php` 中用户名输出加 `htmlspecialchars()`
+
+P1 其他问题（Cookie 存密码、MD5 密码、CSRF 令牌、验证码）**未修复**，留给后续迭代。
+
+---
+
+## 4. 代码质量改进
+
+**提交：** `7409394`
+
+### 4.1 登录后重新生成 Session ID
+
+在 `login_process.php` 和 `register_process.php` 的登录成功位置添加 `session_regenerate_id(true)`，防止 Session Fixation 攻击。
+
+```php
+$admin = mysqli_fetch_array($result_set);
+session_regenerate_id(true);
+$_SESSION['user_id'] = $admin['user_id'];
+```
+
+### 4.2 隐藏数据库错误信息
+
+移除 `or die(mysqli_error())` 直接暴露数据库错误给用户的写法，改用 `@` 静默连接失败后返回通用提示。
+
+### 4.3 删除冗余文件
+
+删除 3 个已被新版覆盖的冗余文件：
+- `news_list_1.php`（无分页纯表格版）
+- `news_list_2.php`（有分页表格版）
+- `review_list_1.php`（纯文本无样式版）
+
+并从 `index.php` 白名单中移除引用。
+
+---
+
+## 5. 前端重构
+
+**提交：** `f4b2a19`
+
+### 5.1 设计风格
+
+**极简主义 / 瑞士风格**
+
+| 元素 | 做法 |
+|------|------|
+| 背景 | 纯白 `#fafafa` / `#ffffff` |
+| 字体 | 标题：Noto Serif SC（宋体），正文：系统无衬线 |
+| 布局 | 单列居中，最大宽度 720px |
+| 留白 | 充足间距，无冗余装饰 |
+| 颜色 | 黑灰主色，左边界彩色提示条 |
+| 响应式 | 600px 以下自动适配移动端 |
+
+### 5.2 结构变化
+
+**删除：**
+- 渐变色横幅（`#banner`）
+- 侧边栏（`#sidebar`，之前放登录框）
+- 等高的 JS 脚本（`sidebarHeight/mainbodyHeight` 计算）
+
+**新增：**
+- 顶栏导航（`header` — 左 logo / 中导航 / 右用户区）
+- 首页登录区域通过点击「登录」按钮切换显示
+- 页脚（`footer`）
+
+### 5.3 修改文件
+
+| 文件 | 变化 |
+|------|------|
+| `css/news.css` | 完全重写（约 600 行 → ~500 行极简样式） |
+| `index.php` | 布局重构，登录内联显示，无侧栏 |
+| `login.php` | 匹配新布局，水平表单项 |
+| `register.php` | 完整独立页面，匹配新布局 |
+| `news_list.php` | 清理 HTML，纯卡片列表 |
+| `news_detail.php` | serif 正文，更干净排版 |
+| `news_add.php` / `news_edit.php` | FCKeditor 100% 宽度 |
+| `review_list.php` | 简化管理布局 |
+
+---
+
+## 6. 新增功能
+
+**提交：** `3204b49`
+
+### 6.1 图片上传到正文
+
+- **新增文件**：`upload_image.php`
+- 在 FCKeditor 中选中图片文件后自动上传到 `uploads/` 目录，生成唯一文件名
+- 上传成功后图片 URL 自动插入编辑器光标位置
+- 仅允许 jpg/jpeg/png/gif/bmp 格式
+
+### 6.2 新闻摘要
+
+- 发布/编辑表单新增「摘要」文本域
+- 留空时自动从正文内容提取纯文本（去除 HTML 标签）前 200 字
+- 列表页：标题下方灰色小字显示摘要（截取 120 字）
+- 详情页：正文上方灰底左边框摘要区块
+
+### 6.3 缩略图
+
+- 发布/编辑表单新增「缩略图」文件上传
+- 自动生成唯一文件名（前缀 `thumb_` + 时间戳 + 随机数）
+- 编辑页显示当前缩略图预览
+- 列表页：每条新闻左侧显示 100x70 缩略图（`object-fit: cover`）
+
+### 6.4 置顶/推荐
+
+- 发布/编辑表单新增「置顶此新闻」复选框
+- 列表页排序：`is_top desc, news_id desc`（置顶排最前）
+- 列表页标题旁显示橙色「置顶」标签
+- 详情页标题旁橙色「置顶」标签
+
+### 数据库变更
+
+`news` 表新增 3 个字段：
+
+```sql
+ALTER TABLE news ADD COLUMN summary text AFTER content;
+ALTER TABLE news ADD COLUMN thumbnail varchar(200) AFTER attachment;
+ALTER TABLE news ADD COLUMN is_top tinyint(1) DEFAULT 0 AFTER thumbnail;
+```
+
+- `news.sql` 已同步更新（新安装用户包含这 3 个字段）
+- `upgrade.php` 保留供已有数据的用户升级
+
+---
+
+## 7. 开发中的问题与解决
+
+### 问题 1：PHP 双引号嵌套导致语法错误
+
+**现象：** 前端页面全部报 `Parse error: syntax error, unexpected 'T_STRING'`
+
+**原因：** 重写的 PHP 文件中 `echo "<div class="message message-error">...</div>"` 内层双引号与外层冲突。PHP 编译器把 `class=` 后的双引号当作字符串结束。
+
+**解决：** 将所有 `echo "<div class="...">"` 改为 `echo '<div class="...">'`，使用单引号包裹 HTML 字符串。
+
+**涉及文件：** `index.php`、`login.php`、`news_list.php`、`news_detail.php`、`news_add.php`、`news_edit.php`、`review_list.php`
+
+### 问题 2：文件编码被写为 UTF-8
+
+**现象：** 浏览器显示「锟斤拷」乱码字符
+
+**原因：** Python 脚本写入文件时默认使用 UTF-8 编码，未指定 GBK
+
+**解决：** 已转换的文件用 GBK 编码重新写入，新增功能脚本（`features.py`）以二进制字节形式写入确保编码正确。
+
+**涉及文件：** `index.php`、`login.php`、`news_save.php`、`review_save.php`、`functions/database.php`、`functions/file_system.php`
+
+### 问题 3：编码转换导致 UTF-8 替换字符残留
+
+**现象：** 首页标题等位置出现「锟斤拷」
+
+**原因：** `fix_quotes.py` 修复双引号时多次 UTF-8 ↔ GBK 互转，导致部分中文变成 `U+FFFD`（UTF-8 替换字符）
+
+**解决：** 重写 `news_list.php` 的全部中文文本为正确 GBK 字节
+
+### 问题 4：Python 脚本 GBK 字符串字面量
+
+**现象：** `SyntaxError: bytes can only contain ASCII literal characters`
+
+**原因：** Python 3 的 `b"..."` 字面量只接受 ASCII 字符，中文不能直接放在 `b` 字符串中
+
+**解决：** 将中文集中放在字典中预编码为 GBK 字节，用变量引用；或直接使用 `str.encode('gbk')` 转换
+
+### 问题 5：PHP 转义符残留
+
+**现象：** `Parse error: unexpected '$_GET' (T_VARIABLE)`
+
+**原因：** `fix_quotes.py` 中写 `\$_GET` 保留了反斜杠转义符
+
+**解决：** 移除多余的 `\` 前缀
+
+### 问题 6：Git 远程推送失败
+
+**原因：** 国内网络无法直连 GitHub
+
+**临时方案：** 设置 HTTP 代理 `203.27.106.146:7897`（未连通）
+
+**建议方案：** 使用 SSH 方式（`git@github.com:Edennnn123/NEWS.git`）或尝试其他代理端口
+
+---
+
+## 8. 功能清单
+
+### 用户系统
+- [x] 用户注册（用户名 + 密码 + 验证码）
+- [x] 用户登录（Cookie 记住登录状态）
+- [x] 登出（Session 销毁）
+
+### 新闻管理（需登录）
+- [x] 发布新闻（FCKeditor 富文本 + 分类 + 附件 + 缩略图 + 置顶）
+- [x] 编辑新闻
+- [x] 删除新闻（级联删除关联评论）
+- [x] 新闻列表（分页 + 搜索 + 摘要 + 缩略图 + 置顶优先）
+
+### 前台展示
+- [x] 新闻详情（标题/作者/分类/时间/点击数/正文/摘要块）
+- [x] 搜索结果关键词高亮
+- [x] 附件下载
+
+### 评论系统
+- [x] 发表评论（无需登录，记录 IP）
+- [x] 评论审核（默认"未审"，管理员审核后显示）
+- [x] 评论管理（分页列表，审核/删除操作）
+
+### 文件系统
+- [x] 文件上传（扩展名白名单验证）
+- [x] 文件下载（自动匹配 MIME 类型）
+- [x] 图片上传到正文（FCKeditor 集成）
+
+### 安全
+- [x] 白名单路由（防 LFI）
+- [x] 输入转义（防 SQL 注入）
+- [x] 上传白名单校验
+- [x] 用户名输出 HTML 转义
+- [x] 登录后 Session ID 重新生成
+- [x] 数据库连接错误信息隐藏
+
+---
+
+## 9. 使用指南
+
+### 用户操作说明
+
+#### 注册
+1. 点击首页顶部「登录」→「没有账号？注册」
+2. 填写用户名、密码、确认密码、验证码
+3. 注册成功后自动登录
+
+#### 登录
+1. 点击首页顶部「登录」按钮
+2. 输入用户名、密码、验证码
+3. 可选「Cookie 保存 1 小时」记住登录
+4. 登录后顶部显示用户名，导航栏出现「发布」和「评论」
+
+#### 浏览新闻
+- 首页列表按发布时间倒序排列，置顶新闻优先显示
+- 搜索框输入关键词后搜索标题和内容
+- 点击标题进入详情页
+
+#### 发布新闻
+1. 登录后点击顶部「发布」
+2. 填写标题、摘要（可选，留空自动截取）
+3. 在 FCKeditor 中编辑正文内容
+   - 工具栏有图片上传按钮（上传到 `uploads/` 并插入正文）
+4. 选择分类
+5. 上传缩略图（可选）
+6. 上传附件（可选，文档/图片/压缩包）
+7. 勾选「置顶此新闻」可选
+8. 点击「提交」
+
+#### 评论
+- 任何访问者可在新闻详情页底部发表评论
+- 评论提交后默认为「未审」状态，需管理员审核后展示
+
+#### 评论管理（管理员）
+1. 登录后点击顶部「评论」
+2. 查看所有评论列表，显示时间/IP/状态
+3. 可「审核通过」或「删除」
+
+---
+
+## 10. 安装部署
+
+### 环境要求
+- 本地或服务器环境（XAMPP / WAMP / LAMP / LNMP）
+- PHP 5.4+
+- MySQL 5.0+
+- Web 服务器（Apache / Nginx）
+
+### 安装步骤
+
+#### 新装用户
+1. 将项目文件夹（`news/`）放置到 Web 服务器根目录
+   - XAMPP：`htdocs/news/`
+   - WAMP：`www/news/`
+   - LNMP：`/var/www/html/news/`
+2. 导入数据库
+   - 方式 A：PHPMyAdmin → 导入 `news.sql`（创建 `news` 数据库及全部表结构）
+   - 方式 B：命令行 `mysql < news.sql`
+3. 初始化管理账号
+   - 浏览器访问：`http://localhost/news/init.php`
+   - 创建分类 + 管理员账号 `admin / admin`
+4. 开始使用
+   - `http://localhost/news/index.php`
+
+#### 已有数据的用户
+1. 覆盖项目文件
+2. 浏览器访问：`http://localhost/news/upgrade.php`（自动添加 3 个新字段）
+3. 已有数据不受影响，内容字段保持兼容
+
+### 数据库连接配置
+
+编辑 `functions/database.php`：
+
+```php
+$hostname = "localhost";
+$database = "news";
+$username = "root";
+$password = "";
+```
+
+如需修改数据库密码或主机地址，更改此文件即可。
+
+### Git 仓库
+
+```
+https://github.com/Edennnn123/NEWS.git
+```
+
+### 修改记录
+
+| 提交 | 日期 | 说明 |
+|------|------|------|
+| `f6a8809` | 2026-07-04 | 初始提交 |
+| `8196725` | 2026-07-04 | P0 安全修复 |
+| `7409394` | 2026-07-04 | P2 质量改进 |
+| `f4b2a19` | 2026-07-04 | 前端重构 |
+| `18071f8` | 2026-07-04 | PHP 语法修复 |
+| `ab45fed` | 2026-07-04 | 清理临时脚本 |
+| `1a38903` | 2026-07-04 | 编码修正 |
+| `b4c2807` | 2026-07-04 | `news_list.php` 编码修正 |
+| `3204b49` | 2026-07-04 | 新增三个功能 |
+| `e2e4f25` | 2026-07-04 | 添加升级脚本 |
+| `c4f1cc3` | 2026-07-04 | 更新 `news.sql` |

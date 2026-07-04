@@ -9,7 +9,7 @@ if (!session_id()){
     session_start();
 }
 if(isset($_GET["message"])){
-    echo "<div class="message message-success">".$_GET["message"]."</div>";
+    echo '<div class="message message-success">'.\$_GET["message"].'</div>';
 }
 $keyword = "";
 $search_sql = "select * from news order by news_id desc";
@@ -44,9 +44,9 @@ if(isset($_GET["keyword"])){
 $result_set = mysqli_query($GLOBALS['database_connection'], $search_sql);
 close_connection();
 if(mysqli_num_rows($result_set) == 0){
-    echo "<div class="empty-state">暂无记录</div>";
+    echo '<div class="empty-state">暂无记录</div>';
 }else{
-    echo "<ul class="news-list">";
+    echo '<ul class="news-list">';
     while($row = mysqli_fetch_array($result_set)){
 ?>
     <li class="news-item">

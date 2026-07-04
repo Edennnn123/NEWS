@@ -4,7 +4,7 @@ if (!session_id()){
     session_start();
 }
 if(!is_login()){
-    echo "<div class="message message-error">请先登录系统再访问此页面！</div>";
+    echo '<div class="message message-error">请先登录系统再访问此页面！</div>';
     return;
 }
 include_once("functions/database.php");

@@ -12,7 +12,7 @@ $result_review = mysqli_query($GLOBALS['database_connection'], $sql_review_query
 $count_news = mysqli_num_rows($result_news);
 $count_review = mysqli_num_rows($result_review);
 if($count_news == 0){
-    echo "<div class="message message-error">该新闻不存在或已被删除</div>";
+    echo '<div class="message message-error">该新闻不存在或已被删除</div>';
     exit;
 }
 $news = mysqli_fetch_array($result_news);

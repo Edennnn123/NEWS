@@ -6,7 +6,7 @@ if (!session_id()){
     session_start();
 }
 if(!is_login()){
-    echo "<div class="message message-error">请先登录系统再访问此页面！</div>";
+    echo '<div class="message message-error">请先登录系统再访问此页面！</div>';
     return;
 }
 include_once("functions/database.php");
@@ -26,7 +26,7 @@ $result_sql = "select * from review order by review_id desc limit $start,$page_s
 $result_set = mysqli_query($GLOBALS['database_connection'], $result_sql);
 close_connection();
 if(mysqli_num_rows($result_set) == 0){
-    echo "<div class="empty-state">暂无评论</div>";
+    echo '<div class="empty-state">暂无评论</div>';
 }
 while($row = mysqli_fetch_array($result_set)){
     $state_class = ($row["state"] == "未审") ? "state-pending" : "state-approved";

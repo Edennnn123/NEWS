@@ -10,13 +10,13 @@ if(!is_login()){
 ?> 
 <?php 
 include_once("functions/database.php"); 
-$news_id = $_POST["news_id"]; 
-$category_id = $_POST["category_id"]; 
-$title = $_POST["title"]; 
-$content = $_POST["content"]; 
+$news_id = intval($_POST["news_id"]); 
+$category_id = intval($_POST["category_id"]); 
+$title = escape_string($_POST["title"]); 
+$content = escape_string($_POST["content"]); 
 $sql = "update news set category_id=$category_id,title='$title',content='$content' where news_id=$news_id"; 
 get_connection(); 
-mysql_query($sql); 
+mysqli_query($GLOBALS['database_connection'], $sql); 
 close_connection(); 
 $message = "新闻信息修改成功！"; 
 header("Location:index.php?url=news_list.php&message=$message"); 

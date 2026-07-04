@@ -1,7 +1,7 @@
 <?php 
 session_start();
 include_once("functions/database.php"); 
-$name = $_POST["name"]; 
+$name = escape_string($_POST["name"]); 
 if($_POST["checknum"] != $_SESSION["checknum"]){
 	header("Location:index.php?login_message=checknum_error"); 
 	return;
@@ -18,14 +18,14 @@ if(empty($_POST["expire"])){
 $password = md5($first_password); 
 $sql = "select * from users where name='$name' and password ='$password'"; 
 get_connection(); 
-$result_set = mysql_query($sql); 
-if(mysql_num_rows($result_set)>0){ 
+$result_set = mysqli_query($GLOBALS['database_connection'], $sql); 
+if(mysqli_num_rows($result_set)>0){ 
      if(isset($_POST["expire"])){ 
      		$expire = time()+intval($_POST["expire"]); 
      		setcookie("name",$name,$expire); 
      		setcookie("password",$first_password,$expire); 
      }  
-     $admin = mysql_fetch_array($result_set); 
+     $admin = mysqli_fetch_array($result_set); 
      $_SESSION['user_id'] = $admin['user_id']; 
      $_SESSION['name'] = $admin['name']; 
      header("Location:index.php?login_message=password_right");

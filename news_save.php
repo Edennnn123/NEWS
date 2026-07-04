@@ -2,29 +2,29 @@
 include_once("functions/is_login.php"); 
 session_start(); 
 if(!is_login()){ 
-     echo "ÇëÄúµÇÂ¼ÏµÍ³ºó£¬ÔÙ·ÃÎÊ¸ÃÒ³Ãæ£¡"; 
+     echo "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ÏµÍ³ï¿½ï¿½ï¿½Ù·ï¿½ï¿½Ê¸ï¿½Ò³ï¿½æ£¡"; 
      return; 
 } 
 ?> 
 <?php 
 include_once("functions/file_system.php"); 
 if(empty($_POST)){ 
-     $message = "ÉÏ´«µÄÎÄ¼þ³¬¹ýÁËphp.iniÖÐpost_max_sizeÑ¡ÏîÏÞÖÆµÄÖµ"; 
+     $message = "ï¿½Ï´ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½php.iniï¿½ï¿½post_max_sizeÑ¡ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½Öµ"; 
 }else{ 
-     $user_id = $_SESSION["user_id"]; 
-     $category_id = $_POST["category_id"]; 
-     $title = $_POST["title"]; 
-     $content = $_POST["content"]; 
+     $user_id = intval($_SESSION["user_id"]);
+     $category_id = intval($_POST["category_id"]);
+     $title = escape_string($_POST["title"]);
+     $content = escape_string($_POST["content"]);
      $currentDate =  date("Y-m-d H:i:s"); 
      $clicked = 0; 
-     $file_name = $_FILES["news_file"]["name"]; 
+     $file_name = escape_string($_FILES["news_file"]["name"]); 
      $message = upload($_FILES["news_file"],"uploads"); 
      $sql = "insert into news 
 values(null,$user_id,$category_id,'$title','$content', '$currentDate',$clicked,'$file_name')"; 
-     if($message=="ÎÄ¼þÉÏ´«³É¹¦£¡"||$message=="Ã»ÓÐÑ¡ÔñÉÏ´«¸½¼þ£¡"){ 
+     if($message=="ï¿½Ä¼ï¿½ï¿½Ï´ï¿½ï¿½É¹ï¿½ï¿½ï¿½"||$message=="Ã»ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"){ 
      		include_once("functions/database.php"); 
      		get_connection(); 
-     		mysql_query($sql); 
+     		mysqli_query($GLOBALS['database_connection'], $sql); 
      		close_connection();		 
      }	 
 } 

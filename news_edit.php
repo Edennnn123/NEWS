@@ -8,12 +8,12 @@ if(!is_login()){
     return;
 }
 include_once("functions/database.php");
-$news_id = $_GET["news_id"];
+$news_id = intval($_GET["news_id"]);
 get_connection();
-$result_news = mysql_query("select * from news where news_id=$news_id");
-$result_category = mysql_query("select * from category");
+$result_news = mysqli_query($GLOBALS['database_connection'], "select * from news where news_id=$news_id");
+$result_category = mysqli_query($GLOBALS['database_connection'], "select * from category");
 close_connection();
-$news = mysql_fetch_array($result_news);
+$news = mysqli_fetch_array($result_news);
 ?>
 <div class="card">
 <h2 class="card-title">编辑新闻</h2>
@@ -40,7 +40,7 @@ $oFCKeditor->Create();
         <label class="form-label">分类</label>
         <select name="category_id" class="form-input" style="width:200px;">
 <?php
-while($category = mysql_fetch_array($result_category)){
+while($category = mysqli_fetch_array($result_category)){
     $selected = ($news['category_id']==$category['category_id'])?"selected":"";
 ?>
             <option value="<?php echo $category['category_id'];?>" <?php echo $selected;?>><?php echo $category['name'];?></option>

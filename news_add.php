@@ -35,9 +35,9 @@ $oFCKeditor->Create();
 <?php
 include_once("functions/database.php");
 get_connection();
-$result_set = mysql_query("select * from category");
+$result_set = mysqli_query($GLOBALS['database_connection'], "select * from category");
 close_connection();
-while($row = mysql_fetch_array($result_set)){
+while($row = mysqli_fetch_array($result_set)){
 ?>
             <option value="<?php echo $row['category_id'];?>"><?php echo $row['name'];?></option>
 <?php

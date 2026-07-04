@@ -16,7 +16,7 @@ if(isset($_GET["message"])){
 $keyword = "";
 $search_sql = "select * from news order by news_id desc";
 if(isset($_GET["keyword"])){
-    $keyword = trim($_GET["keyword"]);
+    $keyword = trim(escape_string($_GET["keyword"]));
     $search_sql = "select * from news where title like '%$keyword%' or content like '%$keyword%' order by news_id desc";
 }
 ?>
@@ -31,27 +31,27 @@ if(isset($_GET["keyword"])){
 <!-- 新闻列表 -->
 <?php
 get_connection();
-$result_news = mysql_query($search_sql);
-$total_records = mysql_num_rows($result_news);
+$result_news = mysqli_query($GLOBALS['database_connection'], $search_sql);
+$total_records = mysqli_num_rows($result_news);
 $page_size = 3;
 if(isset($_GET["page_current"])){
-    $page_current = $_GET["page_current"];
+    $page_current = intval($_GET["page_current"]);
 }else{
     $page_current=1;
 }
 $start = ($page_current-1)*$page_size;
 $search_sql = "select * from news order by news_id desc limit $start,$page_size";
 if(isset($_GET["keyword"])){
-    $keyword = trim($_GET["keyword"]);
+    $keyword = trim(escape_string($_GET["keyword"]));
     $search_sql = "select * from news where title like '%$keyword%' or content like '%$keyword%' order by news_id desc limit $start,$page_size";
 }
-$result_set = mysql_query($search_sql);
+$result_set = mysqli_query($GLOBALS['database_connection'], $search_sql);
 close_connection();
-if(mysql_num_rows($result_set)==0){
+if(mysqli_num_rows($result_set)==0){
     echo "<div style='text-align:center;padding:30px;color:#94A3B8;'>暂无记录</div>";
 }else{
     echo "<ul class='news-list'>";
-    while($row = mysql_fetch_array($result_set)){
+    while($row = mysqli_fetch_array($result_set)){
 ?>
     <li class="news-item">
         <div class="news-item-title">

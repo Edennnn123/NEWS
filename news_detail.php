@@ -1,38 +1,38 @@
 <div class="card">
 <?php
 include_once("functions/database.php");
-$news_id = $_GET["news_id"];
+$news_id = intval($_GET["news_id"]);
 $sql_news_update = "update news set clicked=clicked+1 where news_id=$news_id";
 $sql_news_detail = "select * from news where news_id=$news_id";
 $sql_review_query = "select * from review where news_id=$news_id and state='已审核'";
 get_connection();
-mysql_query($sql_news_update);
-$result_news = mysql_query($sql_news_detail);
-$result_review = mysql_query($sql_review_query);
-$count_news = mysql_num_rows($result_news);
-$count_review = mysql_num_rows($result_review);
+mysqli_query($GLOBALS['database_connection'], $sql_news_update);
+$result_news = mysqli_query($GLOBALS['database_connection'], $sql_news_detail);
+$result_review = mysqli_query($GLOBALS['database_connection'], $sql_review_query);
+$count_news = mysqli_num_rows($result_news);
+$count_review = mysqli_num_rows($result_review);
 if($count_news==0){
     echo "<div class='message message-error'>该新闻不存在或已被删除</div>";
     exit;
 }
-$news = mysql_fetch_array($result_news);
+$news = mysqli_fetch_array($result_news);
 $user_id = $news["user_id"];
 $sql_user = "select * from users where user_id=$user_id";
-$result_user = mysql_query($sql_user);
-$user = mysql_fetch_array($result_user);
+$result_user = mysqli_query($GLOBALS['database_connection'], $sql_user);
+$user = mysqli_fetch_array($result_user);
 $category_id = $news["category_id"];
 $sql_category = "select * from category where category_id=$category_id";
-$result_category = mysql_query($sql_category);
-$category = mysql_fetch_array($result_category);
+$result_category = mysqli_query($GLOBALS['database_connection'], $sql_category);
+$category = mysqli_fetch_array($result_category);
 close_connection();
-mysql_free_result($result_user);
-mysql_free_result($result_category);
-mysql_free_result($result_news);
-mysql_free_result($result_review);
+mysqli_free_result($result_user);
+mysqli_free_result($result_category);
+mysqli_free_result($result_news);
+mysqli_free_result($result_review);
 $title = $news['title'];
 $content = $news['content'];
 if(isset($_GET["keyword"])){
-    $keyword = $_GET["keyword"];
+    $keyword = escape_string($_GET["keyword"]);
     $replacement = "<b><i>".$keyword."</b></i>";
     $title = str_replace($keyword,$replacement,$title);
     $content = str_replace($keyword,$replacement,$content);
@@ -63,9 +63,9 @@ if(isset($_GET["keyword"])){
     if($count_review>0){
         $sql_review = "select * from review where news_id=$news_id and state='已审核' order by review_id desc";
         get_connection();
-        $result_review = mysql_query($sql_review);
+        $result_review = mysqli_query($GLOBALS['database_connection'], $sql_review);
         close_connection();
-        while($review = mysql_fetch_array($result_review)){
+        while($review = mysqli_fetch_array($result_review)){
     ?>
     <div class="review-item">
         <div class="review-content"><?php echo $review['content'];?></div>

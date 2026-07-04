@@ -35,10 +35,21 @@
      			<div id="mainfunction">
      				<br>
      				<?php
-     					if(isset($_GET["url"])){
+     					$allowed_pages = [
+     						"news_list.php",
+     						"news_detail.php",
+     						"news_add.php",
+     						"news_edit.php",
+     						"news_delete.php",
+     						"review_list.php",
+     						"review_news_list.php",
+     						"news_list_1.php",
+     						"news_list_2.php",
+     						"review_list_1.php",
+     					];
+     					$url = "news_list.php";
+     					if(isset($_GET["url"]) && in_array($_GET["url"], $allowed_pages)){
      						$url = $_GET["url"];
-     					}else{
-     						$url = "news_list.php";
      					}
      					include_once($url);
      				?>

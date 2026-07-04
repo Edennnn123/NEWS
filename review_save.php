@@ -1,15 +1,15 @@
 <?php 
 include_once("functions/database.php"); 
-$news_id = $_POST["news_id"]; 
+$news_id = intval($_POST["news_id"]); 
 //$content = htmlspecialchars(addslashes($_POST["content"]));
-$content = addslashes($_POST["content"]); 
+$content = escape_string($_POST["content"]); 
 $currentDate = date("Y-m-d H:i:s"); 
 $ip = $_SERVER["REMOTE_ADDR"]; 
-$state = "Î´ÉóºË"; 
+$state = "Î´ï¿½ï¿½ï¿½"; 
 $sql = "insert into review values(null,$news_id,'$content','$currentDate','$state','$ip')"; 
 get_connection(); 
-mysql_query($sql); 
+mysqli_query($GLOBALS['database_connection'], $sql); 
 close_connection(); 
-$message = "¸ÃÐÂÎÅµÄÆÀÂÛÐÅÏ¢³É¹¦Ìí¼Óµ½Êý¾Ý¿â±íÖÐ£¡"; 
+$message = "ï¿½ï¿½ï¿½ï¿½ï¿½Åµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½É¹ï¿½ï¿½ï¿½ï¿½Óµï¿½ï¿½ï¿½ï¿½Ý¿ï¿½ï¿½ï¿½Ð£ï¿½"; 
 header("Location:index.php?url=news_list.php&message=$message");  
 ?> 

@@ -13,22 +13,22 @@ include_once("functions/database.php");
 include_once("functions/page.php");
 $sql = "select * from review";
 get_connection();
-$result_news = mysql_query($sql);
-$total_records = mysql_num_rows($result_news);
+$result_news = mysqli_query($GLOBALS['database_connection'], $sql);
+$total_records = mysqli_num_rows($result_news);
 $page_size = 3;
 if(isset($_GET["page_current"])){
-    $page_current = $_GET["page_current"];
+    $page_current = intval($_GET["page_current"]);
 }else{
     $page_current = 1;
 }
 $start = ($page_current-1)*$page_size;
 $result_sql = "select * from review order by review_id desc limit $start,$page_size";
-$result_set = mysql_query($result_sql);
+$result_set = mysqli_query($GLOBALS['database_connection'], $result_sql);
 close_connection();
-if(mysql_num_rows($result_set)==0){
+if(mysqli_num_rows($result_set)==0){
     echo "<div style='text-align:center;padding:20px;color:#94A3B8;'>ÔÝÎÞÆÀÂÛ</div>";
 }
-while($row = mysql_fetch_array($result_set)){
+while($row = mysqli_fetch_array($result_set)){
     $state_class = ($row["state"]=="Î´ÉóºË")?"state-pending":"state-approved";
     $state_text = ($row["state"]=="Î´ÉóºË")?"´ýÉóºË":"ÒÑÉóºË";
 ?>

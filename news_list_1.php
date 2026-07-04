@@ -9,7 +9,7 @@ $search_sql = "select * from news order by news_id desc";
 //若进行模糊查询，取得模糊查询的关键字keyword 
 $keyword = ""; 
 if(isset($_GET["keyword"])){ 
-     $keyword = $_GET["keyword"]; 
+     $keyword = escape_string($_GET["keyword"]); 
      //构造模糊查询新闻的SQL语句 
      $search_sql = "select * from news where title like '%$keyword%' or content like '%$keyword%' order by news_id desc"; 
 } 
@@ -23,12 +23,12 @@ if(isset($_GET["keyword"])){
 <table> 
 <?php 
 get_connection(); 
-$result_set = mysql_query($search_sql); 
+$result_set = mysqli_query($GLOBALS['database_connection'], $search_sql); 
 close_connection(); 
-if(mysql_num_rows($result_set)==0){ 
+if(mysqli_num_rows($result_set)==0){ 
      exit("暂无记录！"); 
 } 
-while($row = mysql_fetch_array($result_set)){ 
+while($row = mysqli_fetch_array($result_set)){ 
 ?> 
 <tr> 
 <td> 

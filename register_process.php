@@ -2,7 +2,7 @@
 session_start();
 include_once("functions/database.php");
 
-$name = trim($_POST["name"]);
+$name = trim(escape_string($_POST["name"]));
 $password = $_POST["password"];
 $password2 = $_POST["password2"];
 
@@ -21,8 +21,8 @@ if($password != $password2){
 // 检查用户名是否已存在
 get_connection();
 $check_sql = "select * from users where name='$name'";
-$check_result = mysql_query($check_sql);
-if(mysql_num_rows($check_result) > 0){
+$check_result = mysqli_query($GLOBALS['database_connection'], $check_sql);
+if(mysqli_num_rows($check_result) > 0){
     close_connection();
     header("Location:register.php?message=name_exists");
     return;
@@ -33,9 +33,9 @@ $password_md5 = md5(md5($password));
 
 // 插入新用户
 $sql = "insert into users values(null,'$name','$password_md5')";
-if(mysql_query($sql)){
+if(mysqli_query($GLOBALS['database_connection'], $sql)){
     // 获取新用户ID并自动登录
-    $user_id = mysql_insert_id();
+    $user_id = mysqli_insert_id($GLOBALS['database_connection']);
     $_SESSION['user_id'] = $user_id;
     $_SESSION['name'] = $name;
     close_connection();

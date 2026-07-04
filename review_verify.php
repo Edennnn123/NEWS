@@ -8,10 +8,10 @@ if(!is_login()){
 ?> 
 <?php 
 include_once("functions/database.php"); 
-$review_id = $_GET["review_id"]; 
+$review_id = intval($_GET["review_id"]); 
 $sql = "update review set state='ÒÑÉóºË' where review_id=$review_id"; 
 get_connection(); 
-mysql_query($sql); 
+mysqli_query($GLOBALS['database_connection'], $sql); 
 close_connection(); 
 header("Location:index.php?url=review_list.php"); 
 ?> 

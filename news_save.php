@@ -2,14 +2,14 @@
 include_once("functions/is_login.php"); 
 session_start(); 
 if(!is_login()){ 
-     echo "������¼ϵͳ���ٷ��ʸ�ҳ�棡"; 
+     echo "???????????????????��"; 
      return; 
 } 
 ?> 
 <?php 
 include_once("functions/file_system.php"); 
 if(empty($_POST)){ 
-     $message = "�ϴ����ļ�������php.ini��post_max_sizeѡ�����Ƶ�ֵ"; 
+     $message = "??????????????php.ini??post_max_size?????????"; 
 }else{ 
      $user_id = intval($_SESSION["user_id"]);
      $category_id = intval($_POST["category_id"]);
@@ -21,7 +21,7 @@ if(empty($_POST)){
      $message = upload($_FILES["news_file"],"uploads"); 
      $sql = "insert into news 
 values(null,$user_id,$category_id,'$title','$content', '$currentDate',$clicked,'$file_name')"; 
-     if($message=="�ļ��ϴ��ɹ���"||$message=="û��ѡ���ϴ�������"){ 
+     if($message=="???????????"||$message=="???????????????"){ 
      		include_once("functions/database.php"); 
      		get_connection(); 
      		mysqli_query($GLOBALS['database_connection'], $sql); 

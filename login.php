@@ -2,16 +2,16 @@
 include_once("functions/is_login.php");
 if(isset($_GET["login_message"])){
      if($_GET["login_message"]=="checknum_error"){
-          echo '<div class="message message-error">éªŒè¯ç é”™è¯¯ï¼Œè¯·é‡æ–°ç™»å½•</div>';
+          echo '<div class="message message-error">ÑéÖ¤Âë´íÎó£¬ÇëÖØĞÂµÇÂ¼</div>';
      }else if($_GET["login_message"]=="password_error"){
-          echo '<div class="message message-error">å¯†ç é”™è¯¯ï¼Œè¯·é‡æ–°ç™»å½•</div>';
+          echo '<div class="message message-error">ÃÜÂë´íÎó£¬ÇëÖØĞÂµÇÂ¼</div>';
      }else if($_GET["login_message"]=="password_right"){
-          echo '<div class="message message-success">ç™»å½•æˆåŠŸ</div>';
+          echo '<div class="message message-success">µÇÂ¼³É¹¦</div>';
      }
 }
 if(is_login()){
-     echo '<div class="welcome-info">æ¬¢è¿ <strong>'.$_SESSION['name'].'</strong> è¿›å…¥ç³»ç»Ÿ</div>';
-     echo '<a href="logout.php" class="logout-link">é€€å‡ºç™»å½•</a>';
+     echo '<div class="welcome-info">»¶Ó­ <strong>'.$_SESSION['name'].'</strong> ½øÈëÏµÍ³</div>';
+     echo '<a href="logout.php" class="logout-link">ÍË³öµÇÂ¼</a>';
      return;
 }
 $name = "";
@@ -26,17 +26,17 @@ if(isset($_COOKIE["password"])){
 <form action="login_process.php" method="post" class="login-form">
     <div class="form-row">
         <div class="form-group">
-            <label class="form-label">ç”¨æˆ·å</label>
-            <input type="text" name="name" class="form-input" value="<?php echo $name?>" placeholder="ç”¨æˆ·å">
+            <label class="form-label">ÓÃ»§Ãû</label>
+            <input type="text" name="name" class="form-input" value="<?php echo $name?>" placeholder="ÓÃ»§Ãû">
         </div>
         <div class="form-group">
-            <label class="form-label">å¯†ç </label>
-            <input type="password" name="password" class="form-input" value="<?php echo $password?>" placeholder="å¯†ç ">
+            <label class="form-label">ÃÜÂë</label>
+            <input type="password" name="password" class="form-input" value="<?php echo $password?>" placeholder="ÃÜÂë">
         </div>
         <div class="form-group">
-            <label class="form-label">éªŒè¯ç </label>
+            <label class="form-label">ÑéÖ¤Âë</label>
             <div class="checknum-row">
-                <input type="text" name="checknum" class="form-input" style="width:70px;" placeholder="éªŒè¯ç ">
+                <input type="text" name="checknum" class="form-input" style="width:70px;" placeholder="ÑéÖ¤Âë">
 <?php
 $checknum  =  "";
 $checknum .= mt_rand(0,9);
@@ -51,16 +51,16 @@ echo '                <span class="checknum-display">'.$checknum.'</span>';
         <div class="form-group">
             <label class="form-label">&nbsp;</label>
             <div class="form-actions">
-                <input type="submit" value="ç™»å½•" class="btn btn-primary">
+                <input type="submit" value="µÇÂ¼" class="btn btn-primary">
             </div>
         </div>
     </div>
     <div class="form-row" style="margin-top:8px;">
         <div class="login-cookie">
-            <input type="checkbox" name="expire" value="3600" checked/> Cookieä¿å­˜1å°æ—¶
+            <input type="checkbox" name="expire" value="3600" checked/> Cookie±£´æ1Ğ¡Ê±
         </div>
         <div class="login-links">
-            <a href="register.php">æ²¡æœ‰è´¦å·ï¼Ÿæ³¨å†Œ</a>
+            <a href="register.php">Ã»ÓĞÕËºÅ£¿×¢²á</a>
         </div>
     </div>
 </form>

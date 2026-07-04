@@ -16,6 +16,10 @@ if(!is_login()){
         <input type="text" name="title" class="form-input" placeholder="输入新闻标题">
     </div>
     <div class="form-group">
+        <label class="form-label">摘要</label>
+        <textarea name="summary" class="form-input" rows="3" placeholder="新闻摘要（留空则自动从内容截取）"></textarea>
+    </div>
+    <div class="form-group">
         <label class="form-label">内容</label>
 <?php
 include("fckeditor/fckeditor.php");
@@ -46,10 +50,20 @@ while($row = mysqli_fetch_array($result_set)){
         </select>
     </div>
     <div class="form-group">
+        <label class="form-label">缩略图</label>
+        <input type="file" name="thumbnail" accept="image/jpeg,image/png,image/gif,image/bmp">
+        <div style="font-size:12px;color:#999;margin-top:4px;">建议尺寸 300x200，仅支持图片格式</div>
+    </div>
+    <div class="form-group">
         <label class="form-label">附件上传</label>
         <input type="file" name="news_file" style="font-size:13px;">
         <input type="hidden" name="MAX_FILE_SIZE" value="10485760">
         <div style="font-size:12px;color:#999;margin-top:4px;">支持文档和图片格式，最大10MB</div>
+    </div>
+    <div class="form-group">
+        <label class="form-label">
+            <input type="checkbox" name="is_top" value="1"> 置顶此新闻
+        </label>
     </div>
     <div class="form-actions">
         <input type="submit" value="提交" class="btn btn-primary">

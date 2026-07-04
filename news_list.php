@@ -12,10 +12,10 @@ if(isset($_GET["message"])){
     echo '<div class="message message-success">' . htmlspecialchars($_GET["message"]) . '</div>';
 }
 $keyword = "";
-$search_sql = "select * from news order by news_id desc";
+$search_sql = "select * from news order by is_top desc, news_id desc";
 if(isset($_GET["keyword"])){
     $keyword = trim(escape_string($_GET["keyword"]));
-    $search_sql = "select * from news where title like '%$keyword%' or content like '%$keyword%' order by news_id desc";
+    $search_sql = "select * from news where title like '%$keyword%' or content like '%$keyword%' order by is_top desc, news_id desc";
 }
 ?>
 
@@ -29,31 +29,45 @@ if(isset($_GET["keyword"])){
 get_connection();
 $result_news = mysqli_query($GLOBALS['database_connection'], $search_sql);
 $total_records = mysqli_num_rows($result_news);
-$page_size = 3;
+$page_size = 10;
 if(isset($_GET["page_current"])){
     $page_current = intval($_GET["page_current"]);
 }else{
     $page_current = 1;
 }
 $start = ($page_current - 1) * $page_size;
-$search_sql = "select * from news order by news_id desc limit $start,$page_size";
-if(isset($_GET["keyword"])){
+
+if(!isset($_GET["keyword"])){
+    $search_sql = "select * from news order by is_top desc, news_id desc limit $start,$page_size";
+}else{
     $keyword = trim(escape_string($_GET["keyword"]));
-    $search_sql = "select * from news where title like '%$keyword%' or content like '%$keyword%' order by news_id desc limit $start,$page_size";
+    $search_sql = "select * from news where title like '%$keyword%' or content like '%$keyword%' order by is_top desc, news_id desc limit $start,$page_size";
 }
 $result_set = mysqli_query($GLOBALS['database_connection'], $search_sql);
 close_connection();
 if(mysqli_num_rows($result_set) == 0){
-    echo "<div class=\"empty-state\">暂无记录</div>";
+    echo '<div class="empty-state">暂无记录</div>';
 }else{
-    echo "<ul class=\"news-list\">";
+    echo '<ul class="news-list">';
     while($row = mysqli_fetch_array($result_set)){
+        $has_thumb = !empty($row['thumbnail']) && file_exists('uploads/'.$row['thumbnail']);
 ?>
     <li class="news-item">
         <div class="news-item-title">
-            <a href="index.php?url=news_detail.php&keyword=<?php echo $keyword?>&news_id=<?php echo $row['news_id']?>">
-                <?php echo mb_strcut($row['title'], 0, 40, "gbk")?>
-            </a>
+            <?php if($has_thumb){ ?>
+            <div class="news-thumb">
+                <img src="uploads/<?php echo $row['thumbnail'];?>" alt="">
+            </div>
+            <?php } ?>
+            <div class="news-text">
+                <a href="index.php?url=news_detail.php&keyword=<?php echo $keyword?>&news_id=<?php echo $row['news_id']?>">
+                    <?php if($row['is_top']==1){ ?><span class="top-badge">置顶</span><?php } ?>
+                    <?php echo mb_strcut($row['title'], 0, 60, "gbk")?>
+                </a>
+                <?php if(!empty($row['summary'])){ ?>
+                <div class="news-summary"><?php echo mb_strcut(strip_tags($row['summary']), 0, 120, "gbk")?></div>
+                <?php } ?>
+            </div>
         </div>
 <?php if(is_login()){ ?>
         <div class="news-item-actions">

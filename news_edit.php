@@ -17,10 +17,14 @@ $news = mysqli_fetch_array($result_news);
 ?>
 <div class="card">
 <h2 class="card-title">编辑新闻</h2>
-<form action="news_update.php" method="post">
+<form action="news_update.php" method="post" enctype="multipart/form-data">
     <div class="form-group">
         <label class="form-label">标题</label>
         <input type="text" name="title" class="form-input" value="<?php echo $news['title']?>">
+    </div>
+    <div class="form-group">
+        <label class="form-label">摘要</label>
+        <textarea name="summary" class="form-input" rows="3"><?php echo $news['summary']?></textarea>
     </div>
     <div class="form-group">
         <label class="form-label">内容</label>
@@ -48,6 +52,26 @@ while($category = mysqli_fetch_array($result_category)){
 }
 ?>
         </select>
+    </div>
+<?php if(!empty($news['thumbnail'])){ ?>
+    <div class="form-group">
+        <label class="form-label">当前缩略图</label>
+        <div><img src="uploads/<?php echo $news['thumbnail'];?>" style="max-width:200px;max-height:150px;"></div>
+    </div>
+<?php } ?>
+    <div class="form-group">
+        <label class="form-label">更换缩略图</label>
+        <input type="file" name="thumbnail" accept="image/jpeg,image/png,image/gif,image/bmp">
+    </div>
+    <div class="form-group">
+        <label class="form-label">附件上传</label>
+        <input type="file" name="news_file" style="font-size:13px;">
+        <input type="hidden" name="MAX_FILE_SIZE" value="10485760">
+    </div>
+    <div class="form-group">
+        <label class="form-label">
+            <input type="checkbox" name="is_top" value="1"<?php if($news['is_top']==1) echo ' checked';?>> 置顶此新闻
+        </label>
     </div>
     <div class="form-actions">
         <input type="hidden" name="news_id" value="<?php echo $news_id?>">

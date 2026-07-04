@@ -33,19 +33,26 @@ $title = $news['title'];
 $content = $news['content'];
 if(isset($_GET["keyword"])){
     $keyword = escape_string($_GET["keyword"]);
-    $replacement = "<b><i>".$keyword."</b></i>";
+    $replacement = '<b><i>'.$keyword.'</b></i>';
     $title = str_replace($keyword, $replacement, $title);
     $content = str_replace($keyword, $replacement, $content);
 }
 ?>
 
-<div class="news-detail-title"><?php echo $title;?></div>
+<div class="news-detail-title">
+    <?php if($news['is_top']==1){ ?><span class="top-badge">置顶</span><?php } ?>
+    <?php echo $title;?>
+</div>
 <div class="news-meta">
     <span>作者：<?php echo $user['name'];?></span>
     <span>分类：<?php echo $category['name'];?></span>
     <span>发布时间：<?php echo $news['publish_time'];?></span>
     <span>点击：<?php echo $news['clicked'];?></span>
 </div>
+
+<?php if(!empty($news['summary'])){ ?>
+<div class="news-summary-block"><?php echo $news['summary'];?></div>
+<?php } ?>
 
 <div class="news-content">
     <?php echo $content;?>
@@ -74,14 +81,14 @@ if($count_review > 0){
 <?php
     }
 }else{
-    echo "<div style="color:#999;font-size:13px;margin-bottom:16px;">暂无评论</div>";
+    echo '<div style="color:#999;font-size:13px;margin-bottom:16px;">暂无评论</div>';
 }
 ?>
 
     <div class="review-form">
         <h3 style="font-size:14px;margin-bottom:12px;">发表评论</h3>
         <form action="review_save.php" method="post">
-            <textarea name="content" placeholder="写下你的评论..." style="width:100%;padding:10px 12px;border:1px solid #e8e8e8;font-size:14px;font-family:inherit;resize:vertical;min-height:72px;outline:none;"></textarea>
+            <textarea name="content" placeholder="写下你的评论..."></textarea>
             <input type="hidden" name="news_id" value="<?php echo $news['news_id'];?>">
             <div style="margin-top:10px;">
                 <input type="submit" value="发表评论" class="btn btn-primary">

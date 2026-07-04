@@ -1,84 +1,67 @@
-<!DOCTYPE html>
+<?php
+session_start();
+include_once("functions/is_login.php");
+?><!DOCTYPE html>
 <html>
 <head>
 <meta charset="gbk">
-<title>锟斤拷迎锟斤拷锟斤拷锟斤拷锟脚凤拷锟斤拷系统</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新闻发布系统</title>
 <link rel="stylesheet" href="css/news.css" type="text/css">
 </head>
 <body>
-<div id="container">
-     <div id="header">
-     		<div id="menu">
-     			<div class="site-logo">锟斤拷锟脚凤拷锟斤拷系统</div>
-     			<ul>
-     			<li><a href="index.php">锟斤拷页</a></li>
-     			<li class="menudiv"></li>
-     			<li><a href="index.php?url=review_list.php">锟斤拷锟桔癸拷锟斤拷</a></li>
-     			<li class="menudiv"></li>
-     			<li><a href="index.php?url=news_add.php">锟斤拷锟斤拷锟斤拷锟斤拷</a></li>
-     			</ul>
-     		</div>
-     		<div id="banner">锟斤拷锟脚凤拷锟斤拷系统</div>
-     </div>
-     <div id="pagebody">
-     		<div id="sidebar">
-     			<div id="login">
-     				<div class="card">
-     				<br>
-     				<?php
-     				include_once("login.php");
-     				?>
-     				</div>
-     			</div>
-     		</div>
-     		<div id="mainbody">
-     			<div id="mainfunction">
-     				<br>
-     				<?php
-     					$allowed_pages = [
-     						"news_list.php",
-     						"news_detail.php",
-     						"news_add.php",
-     						"news_edit.php",
-     						"news_delete.php",
-     						"review_list.php",
-     						"review_news_list.php",
+<div class="site">
 
-     					];
-     					$url = "news_list.php";
-     					if(isset($_GET["url"]) && in_array($_GET["url"], $allowed_pages)){
-     						$url = $_GET["url"];
-     					}
-     					include_once($url);
-     				?>
-     			</div>
-     		</div>
-     		<div style="clear:both;">
-     		</div>
-     </div>
-     <div id="footer">
-     		<a href="index.php">系统锟斤拷页</a>
-     		<a href="">锟斤拷系锟斤拷锟斤拷</a>
-     		<a href="">锟斤拷胤锟斤拷锟�</a>
-     		<a href="">锟劫憋拷违锟斤拷锟斤拷息</a>
-     		<br><br>锟斤拷司锟斤拷权锟斤拷锟斤拷
-     </div>
+  <header class="header">
+    <a href="index.php" class="logo">新闻发布系统</a>
+    <nav class="nav">
+      <a href="index.php">首页</a>
+<?php if(is_login()){ ?>
+      <a href="index.php?url=news_add.php">发布</a>
+      <a href="index.php?url=review_list.php">评论</a>
+<?php } ?>
+    </nav>
+    <div class="header-user">
+<?php if(is_login()){ ?>
+      <span class="user-welcome"><strong><?php echo htmlspecialchars($_SESSION['name']); ?></strong></span>
+      <a href="logout.php" class="logout-link">退出</a>
+<?php } else { ?>
+      <span class="header-login-trigger" onclick="this.style.display='none';document.getElementById('loginArea').style.display='block'">登录</span>
+<?php } ?>
+    </div>
+  </header>
+
+  <main class="main">
+<?php
+$allowed_pages = array(
+    "news_list.php",
+    "news_detail.php",
+    "news_add.php",
+    "news_edit.php",
+    "news_delete.php",
+    "review_list.php",
+    "review_news_list.php",
+);
+$url = "news_list.php";
+if(isset($_GET["url"]) && in_array($_GET["url"], $allowed_pages)){
+    $url = $_GET["url"];
+}
+if(!is_login() && $url == "news_list.php"){
+    echo "<div class="login-section" id="loginArea">\n";
+    echo "  <h2>登录</h2>\n";
+    include_once("login.php");
+    echo "</div>\n";
+}
+include_once($url);
+?>
+  </main>
+
+  <footer class="footer">
+    <a href="index.php">首页</a>
+    <a href="#">关于</a>
+    <a href="#">联系</a>
+  </footer>
+
 </div>
 </body>
 </html>
-<script>
-var sidebarHeight = document.getElementById("sidebar").clientHeight;
-var mainbodyHeight = document.getElementById("mainbody").clientHeight;
-if(sidebarHeight<500&&mainbodyHeight<500){
-     document.getElementById("sidebar").style.height="500px";
-     document.getElementById("mainbody").style.height="500px";
-}else{
-     if(sidebarHeight<mainbodyHeight){
-     		document.getElementById("sidebar").style.height=mainbodyHeight+"px";
-     }else{
-
-
-     		document.getElementById("mainbody").style.height=sidebarHeight+"px";
-     }
-}
-</script>
